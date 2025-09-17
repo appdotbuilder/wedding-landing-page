@@ -14,4 +14,21 @@ arch('annotations')
     ->toHavePropertiesDocumented()
     ->toHaveMethodsDocumented();
 
-// Removed invalid arch test that conflicts with Laravel's TestCase usage
+arch('no PhpUnit tests in test directories')
+    ->expect(function () {
+        $finder = Finder::create()
+            ->in(['tests/Feature', 'tests/Unit'])
+            ->files()
+            ->name('*.php');
+
+        $files = [];
+        foreach ($finder as $file) {
+            $content = file_get_contents($file->getRealPath());
+            if (preg_match('/class\s+\w+\s+extends\s+(Tests\\\\)?TestCase/', $content)) {
+                $files[] = $file->getRealPath();
+            }
+        }
+
+        return $files;
+    })
+    ->toBeEmpty();
